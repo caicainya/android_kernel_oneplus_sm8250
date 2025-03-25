@@ -1845,10 +1845,13 @@ static ssize_t disksize_store(struct device *dev,
 	struct zcomp *comp;
 	struct zram *zram = dev_to_zram(dev);
 	int err;
+	u64 disksize_min = totalram_pages() * 2253 << (PAGE_SHIFT - 10);// Hardcoded min 2.1X TotalRAM
 
-	disksize = (u64)4096 * SZ_1M;
+	disksize = memparse(buf, NULL);
 	if (!disksize)
 		return -EINVAL;
+
+	disksize = disksize > disksize_min ? disksize : disksize_min; 
 
 	down_write(&zram->init_lock);
 	if (init_done(zram)) {
